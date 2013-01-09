@@ -17,13 +17,24 @@ namespace TBCReader
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
             List<string> strings = new List<string>();
-            using (StreamReader reader = new StreamReader("config.txt"))
-            {
-                while (!reader.EndOfStream)
-                {
-                    strings.Add(reader.ReadLine());
-                }
-            }
+						try
+						{
+							using (StreamReader reader = new StreamReader("config.txt"))
+							{
+								while (!reader.EndOfStream)
+								{
+									strings.Add(reader.ReadLine());
+								}
+							}
+						}
+						catch (FileNotFoundException e)
+						{
+							MessageBox.Show("Config file not found. It will be created now...");
+							using (StreamWriter writer = new StreamWriter("config.txt", false))
+							{
+							}
+						}
+            
             MainWindow mfw = new MainWindow(strings);
             Application.Run(mfw);
             using (StreamWriter writer = new StreamWriter("config.txt", false))

@@ -8,10 +8,11 @@ using System.Text;
 using System.Windows.Forms;
 using ReaderEx;
 using System.Threading.Tasks;
+using System.Diagnostics;
 
 namespace TBCReader
 {
-    public partial class MainWindow : Form
+	public partial class MainWindow : Form
     {
 
         public List<string> SavedLinks;
@@ -19,10 +20,23 @@ namespace TBCReader
 
         public MainWindow(List<string> links)
         {
-            InitializeComponent();
-            SavedLinks = links;
-            Trackers = new List<NewsTrack>();
+          InitializeComponent();
+          SavedLinks = links;
+          Trackers = new List<NewsTrack>();
+					loadRSSChannelToolStripMenuItem_Click(null,null);
+	        this.Closed += this.UpdatePaths;
+	        UpdatePaths(null, null);
         }
+				
+				public void UpdatePaths(object sender, EventArgs e)
+				{
+					int pathIndex = 0;
+					foreach (string path in from track in Trackers select track.Path)
+					{
+						if (path != SavedLinks[pathIndex]) SavedLinks[pathIndex] = path;
+						pathIndex++;
+					}
+				}
 
         private void LoadChannel(string Path)
         {
@@ -48,12 +62,7 @@ namespace TBCReader
         {
             AddLinkForm dial = new AddLinkForm();
             if (dial.ShowDialog() == DialogResult.OK) SavedLinks.Add(dial.Link);
-        }
-
-        private void RemoveChannelBtn_Click(object sender, EventArgs e)
-        {
-
-        }
+				}
 
         private void ChannelView_AfterSelect(object sender, TreeViewEventArgs e)
         {
@@ -64,14 +73,42 @@ namespace TBCReader
              if (selectedItem is Channel)
              {
                  label4.Visible = false;
-                 richTextBox1.Text = selectedItem.Description;
+                 FeedContent.DocumentText = selectedItem.Description;
              }
              if (selectedItem is Item)
              { 
                  label4.Visible = true;
                  label4.Text = ((Item)selectedItem).Category;
-                 richTextBox1.Text = selectedItem.Description;
+                 FeedContent.DocumentText = selectedItem.Description;
              }
         }
+
+				private void RemoveChannel(object sender, EventArgs e)
+				{
+					IFeed selectedItem = NewsTrack.FindObj(ChannelView.SelectedNode.Text, Trackers);
+					if (selectedItem is Channel)
+					{
+						NewsTrack selectedTrack = this.Trackers.FirstOrDefault(x => x.Name == ((Channel)selectedItem).Title);
+						SavedLinks.Remove(selectedTrack.Path);
+					}
+					else
+					{
+						return;
+					}
+					loadRSSChannelToolStripMenuItem_Click(sender, e);
+				}
+
+				private void GoToNewsBtn_Click(object sender, EventArgs e)
+				{
+					Process firefox = new Process();
+					firefox.StartInfo.FileName = "firefox.exe";
+					firefox.StartInfo.Arguments = label2.Text;
+					firefox.Start();
+				}
+
+				private void closeToolStripMenuItem_Click(object sender, EventArgs e)
+				{
+					this.Close();
+				}
     }
 }
