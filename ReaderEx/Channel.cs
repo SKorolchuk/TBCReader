@@ -6,7 +6,9 @@ using System.Xml.Linq;
 
 namespace ReaderEx
 {
-    /// <summary>
+	using System.Xml;
+
+	/// <summary>
     /// Class which encapsulate one News Channel
     /// </summary>
     public class Channel : IFeed
@@ -36,7 +38,8 @@ namespace ReaderEx
         /// <returns></returns>
         public static Channel Deserializate(string Path)
         {
-            XDocument doc = XDocument.Load(Path);
+						XmlTextReader reader = new XmlTextReader(Path);
+						XDocument doc = XDocument.Load(reader);
             Channel temp = new Channel();
 
             var ItemQuery = from i in doc.Descendants("item") select i;
@@ -50,11 +53,11 @@ namespace ReaderEx
             {
                 temp.News.Add(
                     new Item(){
-                        Title = i.Element("title").Value,
-                        Url = i.Element("link").Value,
-                        Category = i.Element("category").Value,
-                        Description = i.Element("description").Value,
-                        PubTime = i.Element("pubDate").Value
+                        Title = (i.Element("title") != null ? i.Element("title").Value : ""),
+												Url = (i.Element("link") != null ? i.Element("link").Value : ""),
+												Category = (i.Element("category") != null ? i.Element("category").Value : ""),
+												Description = (i.Element("description") != null ? i.Element("description").Value : ""),
+												PubTime = (i.Element("pubDate") != null ? i.Element("pubDate").Value : "")
                     });
             }
 
